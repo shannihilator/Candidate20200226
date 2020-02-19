@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     get :test, to: 'me#test'
     namespace :v1 do 
     	get :person, to: 'person#index'
+    	get :people, to: 'person#retrievePeople'
     end
   end
 
