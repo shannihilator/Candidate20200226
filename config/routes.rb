@@ -7,6 +7,7 @@ Rails.application.routes.draw do
     namespace :v1 do 
     	get :person, to: 'person#index'
     	get :people, to: 'person#retrievePeople'
+    	get :character, to: 'person#characterCount'
     end
   end
 
