@@ -14,20 +14,21 @@ module Api
 			end
 
 			def characterCount
-				characterHash = {}
+				character_hash = {}
+				character_arr = []
 				response_body = makeApiRequest
         response_body["data"].each do |person|
-        	retrieveCharacterCount(person["email_address"].downcase, characterHash)
+        	retrieveCharacterCount(person["email_address"].downcase, character_hash)
       	end
-      	characterHash = Hash[characterHash.sort_by{|k, v| v}.reverse]
-        render json: {response: characterHash, response_code: 200}
+      	character_hash = Hash[character_hash.sort_by{|k, v| v}.reverse]
+      	character_hash.each{|k,v|  character_arr.push({letter: k, count: v})}
+        render json: {response: character_arr, response_code: 200}
 			end
 
-			def duplicates
+			def retrieveDuplicates
 				response_body = makeApiRequest
 				# Extract all emails without whitespace remove everything after @ and downcase
         response_body["data"].map!{|k| k["email_address"].downcase.gsub(/[[:space:]]/, '')}
-        # Based on Documentation only looking for username I would remove this code if email was a factor
         response_body["data"].map! {|email|
         	symbol_index = email.index('@')
         	#email.slice!(symbol_index-1..email.length)
@@ -39,23 +40,18 @@ module Api
         }
         return_hash = checkDupe(response_body["data"])
 
-        # Check Character Range 
-        	# if range < 2
-        		 # if substring.exist email2 
-        		  # add dupe
-
         render json: {response: return_hash, response_code: 200}
 			end
 
 			# ***************** Private Methods ********************
 	    private
 
-	    def retrieveCharacterCount(email, characterHash)
+	    def retrieveCharacterCount(email, character_hash)
 	    	email.each_char{ |c|
-  				if characterHash.has_key?(c)
-  					characterHash[c] = characterHash[c] + 1
+  				if character_hash.has_key?(c)
+  					character_hash[c] = character_hash[c] + 1
   				else
-  					characterHash[c] = 1
+  					character_hash[c] = 1
   				end
 				}
 	    end # End retrieveCharacterCount
@@ -70,13 +66,15 @@ module Api
 	    							length_range = Range.new(copied_obj[:username].length,copied_obj[:username].length+2)
 	    							if length_range.cover? selected_obj[:username].length
 	    									dupeArr.push(
-	    										{original_email: selected_obj, duplicate_email: copied_obj}
+	    										{
+	    											original_email: selected_obj, 
+	    											duplicate_email: copied_obj}
 	    										)
-	    							end
-	    					end
-	    			end
-	    		end
-	    	end
+	    							end # End if
+	    					end # End if
+	    			end # End if
+	    		end # End do
+	    	end # End do
 	    	return dupeArr
 
 	    end # End checkDupe
