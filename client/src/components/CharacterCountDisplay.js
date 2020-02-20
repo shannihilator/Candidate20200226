@@ -6,7 +6,7 @@ export const CharacterCountButton = (props) => {
   const handleClick = () => {
     fetchCharacterCountData().then(resp => {
       console.log(resp);
-      props.onClick(resp.response);
+      props.onClick(resp.response_data);
     })
   };
   return (

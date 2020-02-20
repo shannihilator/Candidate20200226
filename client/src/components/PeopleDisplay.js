@@ -64,7 +64,7 @@ export class PeopleDisplay extends React.Component {
   componentDidMount() {
     fetchPeopleData().then(resp => {
           console.log(resp);
-          this.addPeople(resp.response.data);
+          this.addPeople(resp.response_data.data);
         });
   }
 

@@ -7,7 +7,7 @@ export const DuplicateButton = (props) => {
   // function to handleButton Click
   const handleClick = () => {
     fetchDuplicatesData().then(resp => {
-      props.onClick(resp.response);
+      props.onClick(resp.response_data);
     })
   };
   return (
