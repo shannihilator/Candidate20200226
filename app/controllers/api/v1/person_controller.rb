@@ -1,7 +1,29 @@
+
+# ---------------------------------------------------------------------------------------------------------------
+# [TODO] (What I would finish if I was to keep working on this project)
+# 1. Move private functions below to Model or Lib folder (person specific methods: model file, generic: lib dir)
+# 2. Remove as much hardcoded values (ie: URL, strings, etc) as possible in the actual code flow
+# 3. Add authentication and authorization
+# 4. Add actual Logging
+# 5. Write Respec Tests
+# 6. Use Linting tool
+# 7. Crosscheck organzational coding standards with documentation and correct if needed
+# 8. Submit Merge Request
+# 9. Code Review
+# 10. Add NonFunctional Requirements to Client Application (loading bar, additional css)
+
+# Notes: Didnt use DB because it was no in requirements
+# 			 Also passed on some Non-Functional Requirements as listed above
+# ---------------------------------------------------------------------------------------------------------------
+
+
+# Api Module
 module Api
+	# V1 Module
 	module V1
 		require "net/http"
 
+		# PersonController Class
 		class PersonController < Api::BaseController
 
 			# Initial Test Method make routing was working
@@ -12,9 +34,9 @@ module Api
 			# retrieve people from SalesLoft API
 			def getPeople
 				begin
-					# Call makeApiRequest method to retrieve data from SalesLoft API
+					# Call getPeopleData method to retrieve data from SalesLoft API
 					# [TODO] LOG [DEBUG MESSAGE]
-					response_body = makeApiRequest
+					response_body = getPeopleData
 					
 					# Return Response
 	        render json: {
@@ -48,8 +70,8 @@ module Api
 					character_hash = {}
 					character_arr = []
 
-					# Call makeApiRequest method to retrieve data from SalesLoft API
-					response_body = makeApiRequest
+					# Call getPeopleData method to retrieve data from SalesLoft API
+					response_body = getPeopleData
 
 					# Iterate over each person to pass email_address to retrieveCharacterCount method 
 	        response_body["data"].each do |person|
@@ -90,8 +112,8 @@ module Api
 			def getDuplicates
 				begin
 					# [TODO] LOG [DEBUG MESSAGE]
-					# Call makeApiRequest method to retrieve data from SalesLoft API
-					response_body = makeApiRequest
+					# Call getPeopleData method to retrieve data from SalesLoft API
+					response_body = getPeopleData
 					
 					# Extract all emails without whitespace remove everything after @ and downcase
 	        response_body["data"].map!{|k| k["email_address"].downcase.gsub(/[[:space:]]/, '')}
@@ -180,8 +202,34 @@ module Api
 
 	    end # End checkDupe
 
-	    def makeApiRequest
-	    	uri = URI('https://api.salesloft.com/v2/people.json')
+	    # retrieves all the people_data from sales_loft api
+	    def getPeopleData
+	    	# initialize variables
+	    	people_data_arr = []
+	    	current_page = 0
+	    	total_pages = nil
+
+	    	# setup data after first request 
+	    	first_response_data = makeApiRequest(current_page)
+	    	people_data_arr.concat(first_response_data["data"])
+	    	total_pages = first_response_data["metadata"]["paging"]["total_pages"]
+	    	current_page = first_response_data["metadata"]["paging"]["current_page"]
+	    	
+	    	# call api until all pages are retrieved
+	    	while (current_page <= total_pages)
+	    		current_page = current_page + 1
+ 	    		response_data = makeApiRequest(current_page)
+ 	    		people_data_arr.concat(response_data["data"])
+	    	end
+
+	    	# add array of all people data to last retrieved response_data
+	    	response_data["data"] = people_data_arr
+	    	return response_data
+	    end
+
+	    # makes network call to sales_loft api with page_number
+	    def makeApiRequest(page_number)
+	    	uri = URI("https://api.salesloft.com/v2/people.json?include_paging_counts=true&per_page=100&page=#{page_number}")
         http = Net::HTTP.new(uri.host, uri.port)
         request = Net::HTTP::Get.new(uri)
         request["Authorization"] = "Bearer #{ENV['SALESLOFT_APPLICATION_SECRET']}"
@@ -191,7 +239,6 @@ module Api
         response_body = JSON.parse(response.body)
         return response_body
 	    end # End makeApiRequest
-
 		end # End Class PersonController
   end # End module V1
 end # End module Api
