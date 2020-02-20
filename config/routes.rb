@@ -8,7 +8,7 @@ Rails.application.routes.draw do
     	get :person, to: 'person#index'
     	get :people, to: 'person#getPeople'
     	get :character, to: 'person#getCharacterCount'
-    	get :duplicate, to: 'person#getDuplicates'
+    	get :dupe, to: 'person#getDuplicates'
     end
   end
 
