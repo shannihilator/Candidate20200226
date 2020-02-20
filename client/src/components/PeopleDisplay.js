@@ -1,62 +1,80 @@
 import React from 'react'
-import {fetchPeopleData } from '../actions/AsyncActions'
+import {fetchPeopleData} from '../actions/AsyncActions'
+import styled from 'styled-components'
 
-// PeopleButton Component
-export const PeopleButton =  (props) => {
-  // function to handleButton Click
-  const handleClick = () => {
-    //event.preventDefault();
-    fetchPeopleData().then(resp => {
-      console.log(resp);
-      props.onClick(resp.response.data);
-    })
-  };
-  return (
-    <button onClick={handleClick}>People Button</button>
-  );
-};
+const FlexItem = styled.div`
+  display: flex;
+`;
 
-class Person extends React.Component {
+//  component for PersonRow
+class PersonRow extends React.Component {
   render() {
     const person = this.props;
     return (
-        <div className="info">
-          <div className="name">{person.first_name} {person.last_name}</div>
-          <div className="email_address">{person.email_address}</div>
-          <div className="job_title">{person.title}</div>
-        </div>
+      <tr>
+        <td> {person.first_name} {person.last_name}</td>
+        <td> {person.email_address}</td>
+        <td> {person.title} </td>
+      </tr>
     );
   }
 }
 
-export const PeopleList = (props) => {
-  //const person = this.props;
+//  component for PeopleTable
+export const PeopleTable = (props) => {
   return (
-    <div>
-      {props.people.map(person => <Person key={person.id} {...person}/>)}
-    </div>
+    <table>
+      <thead>
+      <tr>
+      <th>
+        Name
+      </th>
+      <th>
+        Email
+      </th>
+      <th>
+        Title
+      </th>
+      </tr>
+      </thead>
+      <tbody>
+        {props.people.map(person => <PersonRow key={person.id} {...person}/>)}
+      </tbody>
+    </table>
   );
 };
 
+// class component for DuplicateDisplay
 export class PeopleDisplay extends React.Component {
+  // initialize class variables
   constructor(props) {
     super(props);
     this.state = {people: []};
     this.addPeople = this.addPeople.bind(this);
   }
-  addPeople(peopleData){
+
+  // // function to set new state on function call
+  addPeople(peopleData) {
     this.setState(prevState => ({
       people: [...prevState.people, ...peopleData],
     }));
   };
-   render() {
-     return (
-       <div>
-         <PeopleButton onClick={this.addPeople} />
-         <PeopleList people={this.state.people} />
-       </div>
-     )
-   }
+
+  // retrieve data on ComponentMount
+  componentDidMount() {
+    fetchPeopleData().then(resp => {
+          console.log(resp);
+          this.addPeople(resp.response.data);
+        });
+  }
+
+  render() {
+    return (
+      <FlexItem>
+          <PeopleTable people={this.state.people}/>
+      </FlexItem>
+    )
+  }
 };
 
 
