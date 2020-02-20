@@ -9,3 +9,26 @@ export function fetchMe() {
       then(me => dispatch(actions.receiveMe(me)));
   }
 }
+
+// export const fetchPeopleData = async() => {
+//   const resp = await fetch('http://localhost:5000/api/v1/people');
+//   const data = await resp.json();
+//   console.log(data);
+// };
+
+// function that retrieves People Data Rails Api
+export function fetchPeopleData() {
+  return fetch('http://localhost:5000/api/v1/people', creds).
+  then(resp => resp.json());
+}
+
+// function that retrieves People Data Rails Api
+export function fetchCharacterCountData() {
+  return fetch('http://localhost:5000/api/v1/character', creds).
+  then(resp => resp.json());
+}
+
+export function fetchDuplicatesData() {
+  return fetch('http://localhost:5000/api/v1/dulicate', creds).
+  then(resp => resp.json());
+}

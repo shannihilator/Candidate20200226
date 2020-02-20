@@ -5,3 +5,4 @@ class Api::MeController < Api::BaseController
     current_user ? (respond_with({ user: current_user })) : respond_with {}
   end
 end
+

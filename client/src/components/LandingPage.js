@@ -2,7 +2,10 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { ConnectedNavBar } from '../containers/ConnectedNavBar'
-import { Intro } from './Intro'
+import { PeopleDisplay } from './PeopleDisplay'
+import { CharacterCountDisplay } from "./CharacterCountDisplay";
+import { DuplicateDisplay } from "./DuplicateDisplay";
+
 
 const Page = styled.div`
   display: grid;
@@ -11,17 +14,23 @@ const Page = styled.div`
   width: 100%;
 `;
 
-const FlexBox = styled.div`
+const FlexContainer = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: baseline;
+  flex-direction: row;
+  justify-content: space-evenly;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 `;
 
 export const LandingPage = () => (
   <Page>
     <ConnectedNavBar />
-    <FlexBox>
-      <Intro />
-    </FlexBox>
+    <FlexContainer>
+      <PeopleDisplay />
+      <CharacterCountDisplay />
+      <DuplicateDisplay />
+    </FlexContainer>
   </Page>
 );

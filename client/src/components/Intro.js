@@ -5,7 +5,7 @@ const FlexBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-flow: column nowrap;
+  flex-flow: column wrap;
   margin-top: 30px;
 `
 
