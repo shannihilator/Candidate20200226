@@ -4,48 +4,140 @@ module Api
 
 		class PersonController < Api::BaseController
 
+			# Initial Test Method make routing was working
 			def index
 				render json: {test: "Hello World"}
-			end
+			end # End index
 
-			def retrievePeople
-				response_body = makeApiRequest
-        render json: {response: response_body, response_code: 200}
-			end
+			# retrieve people from SalesLoft API
+			def getPeople
+				begin
+					# Call makeApiRequest method to retrieve data from SalesLoft API
+					# [TODO] LOG [DEBUG MESSAGE]
+					response_body = makeApiRequest
+					
+					# Return Response
+	        render json: {
+	        	response_data: response_body,
+	        	operation: "get_people_data",
+	        	status: "success",
+	        	timestamp:Time.now, 
+	        	uuid: SecureRandom.uuid, 
+	        	response_code: 200,
+	        	message: "Data Retrieved"
+	        }
+      	rescue StandardError => e
+      		# [TODO] LOG [ERROR MESSAGE]
+      		render json: {
+	        	response_data: e.message,
+	        	operation: "people_data",
+	        	status: "error",
+	        	timestamp:Time.now, 
+	        	uuid: SecureRandom.uuid, 
+	        	response_code: 500,
+	        	message: "Error Occured"
+	        } 
+      	end # End rescue block
+			end # End retrievePeople
 
-			def characterCount
-				character_hash = {}
-				character_arr = []
-				response_body = makeApiRequest
-        response_body["data"].each do |person|
-        	retrieveCharacterCount(person["email_address"].downcase, character_hash)
-      	end
-      	character_hash = Hash[character_hash.sort_by{|k, v| v}.reverse]
-      	character_hash.each{|k,v|  character_arr.push({letter: k, count: v})}
-        render json: {response: character_arr, response_code: 200}
-			end
+			# retrieve character_count from SalesLoft people emails
+			def getCharacterCount
+				begin
+					# [TODO] LOG [DEBUG MESSAGE]				
+					# intialize variables
+					character_hash = {}
+					character_arr = []
 
-			def retrieveDuplicates
-				response_body = makeApiRequest
-				# Extract all emails without whitespace remove everything after @ and downcase
-        response_body["data"].map!{|k| k["email_address"].downcase.gsub(/[[:space:]]/, '')}
-        response_body["data"].map! {|email|
-        	symbol_index = email.index('@')
-        	#email.slice!(symbol_index-1..email.length)
-        	email = {
-        			email_address: email,
-        			username: username = email[0..symbol_index-1],
-        			domain: email[symbol_index..email.length]
-        		}
-        }
-        return_hash = checkDupe(response_body["data"])
+					# Call makeApiRequest method to retrieve data from SalesLoft API
+					response_body = makeApiRequest
 
-        render json: {response: return_hash, response_code: 200}
-			end
+					# Iterate over each person to pass email_address to retrieveCharacterCount method 
+	        response_body["data"].each do |person|
+	        	retrieveCharacterCount(person["email_address"].downcase, character_hash)
+	      	end
+	      	
+	      	# Setup character_hash in descending order 
+	      	character_hash = Hash[character_hash.sort_by{|k, v| v}.reverse]
+
+	      	# push each element of character_hash onto an arr
+	      	character_hash.each{|k,v|  character_arr.push({letter: k, count: v})}
+
+	      	# Return Response
+	        render json: {
+	        	response_data: character_arr,
+	        	operation: "get_character_count_data", 
+	        	timestamp:Time.now,
+	        	status: "success",  
+	        	response_code: 200,
+	        	uuid: SecureRandom.uuid,
+	        	message: "Data Retrieved"
+	        }
+      	rescue StandardError => e
+      		# LOG [ERROR MESSAGE]
+      	  render json: {
+	        	response_data: e.message,
+	        	operation: "get_character_count_data",
+	        	status: "error",
+	        	timestamp:Time.now, 
+	        	uuid: SecureRandom.uuid, 
+	        	response_code: 500,
+	        	message: "Error Occured"
+	        }
+      	end # End rescue block
+			end # End retrieveCharacterCount
+
+			# retrieve possible duplicates from SalesLoft people emails
+			def getDuplicates
+				begin
+					# [TODO] LOG [DEBUG MESSAGE]
+					# Call makeApiRequest method to retrieve data from SalesLoft API
+					response_body = makeApiRequest
+					
+					# Extract all emails without whitespace remove everything after @ and downcase
+	        response_body["data"].map!{|k| k["email_address"].downcase.gsub(/[[:space:]]/, '')}
+
+	        # Break email up into username and domain
+	        response_body["data"].map! {|email|
+	        	symbol_index = email.index('@')
+	        	email = {
+	        			email_address: email,
+	        			username: username = email[0..symbol_index-1],
+	        			domain: email[symbol_index..email.length]
+	        		}
+	        }
+
+	        # Call checkDupe Method
+	        return_hash = checkDupe(response_body["data"])
+
+	        # Return Response
+	        render json: {
+	        	response_data: return_hash, 
+	        	timestamp:Time.now,
+	        	operation: "get_duplicate_data", 
+	        	status: "success", 
+	        	uuid: SecureRandom.uuid,
+	        	response_code: 200,
+	        	message: "Data Retrieved"
+	        }
+      	rescue StandardError => e
+      		# [TODO] LOG [ERROR MESSAGE]
+	      	render json: {
+		        	response_data: e.message,
+		        	status: "error",
+		        	operation: "get_duplicate_data", 
+		        	timestamp:Time.now, 
+		        	uuid: SecureRandom.uuid, 
+		        	response_code: 500,
+		        	message: "Error Occured"
+		        }
+
+      	end # End rescue block
+			end # End retrieveDuplicates
 
 			# ***************** Private Methods ********************
 	    private
 
+	    # private method that retrieves character count for given email_address
 	    def retrieveCharacterCount(email, character_hash)
 	    	email.each_char{ |c|
   				if character_hash.has_key?(c)
@@ -56,15 +148,24 @@ module Api
 				}
 	    end # End retrieveCharacterCount
 
+	    # private method that checks duplicates in email_arr
 	    def checkDupe(email_arr)
 	    	dupeArr = []
 	    	copy_arr = Array.new(email_arr)
 	    	email_arr.each do |selected_obj|
-	    		copy_arr.each do |copied_obj|                
+	    		copy_arr.each do |copied_obj|  
+	    		  
+	    		  # make sure usernames are not compared to equals ones              
 	    			if selected_obj[:username] != copied_obj[:username]
+	    				
+	    				# check if selected username is substring of copied_username
 	    					if selected_obj[:username].include? copied_obj[:username]
+	    						 
+	    						 # check if selected_username length is in range of copied_username
 	    							length_range = Range.new(copied_obj[:username].length,copied_obj[:username].length+2)
 	    							if length_range.cover? selected_obj[:username].length
+	    								
+	    								# push original email & dupe email unto the dupeArr
 	    									dupeArr.push(
 	    										{
 	    											original_email: selected_obj, 
